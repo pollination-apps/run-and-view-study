@@ -12,7 +12,8 @@ from pollination_streamlit_viewer import viewer
 api_client = get_api_client()
 
 # Open file containing Recipe
-direct_sun_hours = open('recipes/direct_sun_hours.json')
+direct_sun_hours = open('files/direct_sun_hours.json')
+wea = open('files/USA_MO_St.Louis-Lambert.Intl.AP.724340_TMY3.wea')
 
 # Initialize Streamlit session_state variables
 if 'owner' not in st.session_state:
@@ -121,14 +122,49 @@ with new_study_tab:
         default_recipe=json.load(direct_sun_hours),
     )
 
+    # Bug where you have to include the value if the input will be hidden
+    defaults = {
+        "cpu-count" : {
+            "hidden": True,
+            "value": 50,
+        },
+        "grid-filter" : {
+            "hidden": True,
+            "value": "*"
+        },
+        "min-sensor-count" : {
+            "hidden": True,
+            "value": 500,
+        },
+        "north" : {
+            "hidden": True,
+            "value": 0
+        },
+        "timestep" : {
+            "hidden": True,
+            "value": 1,
+        },
+        "wea" : {
+            "hidden": True,
+            # Takes a partial FileMeta object, so object needs to be present in project
+            # Can be retrieved by uploading a file to Pollination Cloud, or from a file that is already on Pollination Cloud
+            "value": {
+                "key": "USA_MO_St.Louis-Lambert.Intl.AP.724340_TMY3.wea",
+                "file_type": "file",
+                "file_name": "USA_MO_St.Louis-Lambert.Intl.AP.724340_TMY3.wea",
+            }
+        },
+    }
+
     # Recipe inputs form
     recipe_inputs_form(
-      'recipe-study',
-      api_client,
-      project_owner=st.session_state['owner'] or '',
-      project_name=st.session_state['sel-project']['name'] if st.session_state['sel-project'] else '',
-      recipe=st.session_state['sel-recipe'] or None,
-      on_change=handle_submit_recipe
+        'recipe-study',
+        api_client,
+        project_owner=st.session_state['owner'] or '',
+        project_name=st.session_state['sel-project']['name'] if st.session_state['sel-project'] else '',
+        recipe=st.session_state['sel-recipe'] or None,
+        on_change=handle_submit_recipe,
+        default_inputs=defaults,
     )
 
 with view_study_tab:
@@ -145,7 +181,7 @@ with view_study_tab:
       api_client,
       project_name=project_name,
       project_owner=project_owner,
-      default_study_id=st.session_state['new-study']['study_id'] if st.session_state['new-study'] else None,
+      default_study_id=st.session_state['recipe-study']['study_id'] if st.session_state['recipe-study'] else None,
       on_change=handle_sel_study
     )
     
@@ -180,10 +216,6 @@ with view_study_tab:
       key='download-button',
       disabled=st.session_state['response'] == ''
     )
-
-    # st.json(
-    #   st.session_state['sel-artifact'] or '{}', expanded=False
-    # )
 
     if st.session_state['content'] is not None:
         vtkjs = viewer(
