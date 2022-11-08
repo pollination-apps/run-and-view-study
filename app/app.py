@@ -13,7 +13,7 @@ api_client = get_api_client()
 
 # Open file containing Recipe
 direct_sun_hours = open('files/direct_sun_hours.json')
-wea = open('files/USA_MO_St.Louis-Lambert.Intl.AP.724340_TMY3.wea')
+wea = open('files/Boston Logan IntL Arpt_0_8759.wea')
 
 # Initialize Streamlit session_state variables
 if 'owner' not in st.session_state:
@@ -70,7 +70,6 @@ def handle_sel_study():
 def handle_sel_artifact():
     artifact = st.session_state['sel-artifact']
     if artifact is None:
-        print('What the fuck?')
         st.session_state['signed_url'] = None
         st.session_state['response'] = None
         st.session_state['content'] = None
@@ -79,7 +78,7 @@ def handle_sel_artifact():
     url = "/".join(st.session_state['request_path'])
     st.session_state['signed_url'] = api_client.get(path=f'/{url}/download', params=st.session_state['request_params'])
     response = requests.get(st.session_state['signed_url'], headers=api_client.headers)
-    if response.status_code is 200:
+    if response.status_code == 200:
         st.session_state['response'] = response.content
         # if file is viewable by viewer, prepare vtkjs file
         extension = st.session_state['sel-artifact']['file_name'].split('.')[1] if st.session_state['sel-artifact'] else None
@@ -149,9 +148,10 @@ with new_study_tab:
             # Takes a partial FileMeta object, so object needs to be present in project
             # Can be retrieved by uploading a file to Pollination Cloud, or from a file that is already on Pollination Cloud
             "value": {
-                "key": "USA_MO_St.Louis-Lambert.Intl.AP.724340_TMY3.wea",
+                "key": "Boston Logan IntL Arpt_0_8759.wea",
                 "file_type": "file",
-                "file_name": "USA_MO_St.Louis-Lambert.Intl.AP.724340_TMY3.wea",
+                "file_name": "Boston Logan IntL Arpt_0_8759.wea",
+                "name": "Boston Logan IntL Arpt_0_8759.wea",
             }
         },
     }
